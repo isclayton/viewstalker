@@ -20,3 +20,4 @@ Arguments:
 - [x] initial target handling and parsing
 - [ ] recreate blacklist3r functionality for bruting keys
 - [ ] automatic payload generation and exploitation
+- [ ] Support for JSF viewstates
