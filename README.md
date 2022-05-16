@@ -40,3 +40,7 @@ Arguments:
 - [x] Multi-host scanning
 - [ ] automatic payload generation and exploitation
 - [ ] Support for JSF viewstates
+
+
+### Acknowledgement 
+[NotSoSecure](https://github.com/NotSoSecure) for development of Blacklist3r, which I referenced heavily for the core functionality of ViewStalker
