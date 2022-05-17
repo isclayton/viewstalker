@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/base64"
 	"fmt"
@@ -98,6 +99,48 @@ func decode(validationKey string, validationAlgorithm string, protectedData []by
 	return match
 }
 
+func bruteKeys(vsArray []viewstate, keyScanner *bufio.Scanner) {
+	fmt.Println("iek")
+	for _, vs := range vsArray {
+		var validationKey string
+		for keyScanner.Scan() {
+			validationKey = strings.Split(keyScanner.Text(), " ")[0]
+			viewstate, _ := base64.StdEncoding.DecodeString(vs.viewstate)
+			modifier := vs.modifier
+			for _, element := range algorithms {
+				match := decode(validationKey, element, viewstate, modifier)
+				if match {
+					vs.validationKey = validationKey
+					fmt.Println(Green("KEY FOUND!!!"))
+					fmt.Printf("Host: ")
+					fmt.Printf(Yellow(" %s \n"), vs.host)
+					fmt.Printf("Validation Key: ")
+					fmt.Printf(Green("%s"), vs.validationKey)
+				}
+			}
+
+		}
+
+	}
+}
+
+func buildViewstateObject(vsArray []viewstate, hostScanner *bufio.Scanner) []viewstate {
+	//var vsArray []viewstate
+	for hostScanner.Scan() {
+		address := hostScanner.Text()
+		sb := makeRequest(address)
+		vs, mod := extractViewstate(sb)
+		vstate := viewstate{
+			host:      address,
+			modifier:  mod,
+			viewstate: vs,
+		}
+		vsArray = append(vsArray, vstate)
+
+	}
+	return vsArray
+}
+
 func main() {
 
 	parser := argparse.NewParser("viewStalker", "A tool for identifying vulnerable ASP.NET viewstates")
@@ -125,6 +168,7 @@ func main() {
 		valKey := *testValKey
 		modifier := *testModifier
 		algo := *testAlgo
+
 		if len(viewstate) == 0 || len(valKey) == 0 || len(modifier) == 0 || len(algo) == 0 {
 			fmt.Print(parser.Usage(err))
 			fmt.Println(Red("Required: viewstate, modifier, algo, key"))
@@ -143,7 +187,10 @@ func main() {
 
 	} else if strings.Contains(addressValue, "http") {
 		sb := makeRequest(addressValue)
-		fmt.Println(extractViewstate(sb))
+		fmt.Println(sb)
+		//vs, mod := extractViewstate(sb)
+
+		//match := decode(, element, vs, mod)
 
 	} else if !argparse.IsNilFile(&hostsFile) {
 
@@ -154,48 +201,16 @@ func main() {
 		}
 		defer keyfile.Close()
 
-		hostScanner, hostsfile, err := getHosts(hostsFile)
+		hostScanner, hostsfile, err := prepareHosts(hostsFile)
 		if err != nil {
 			fmt.Print(parser.Usage(err))
 		}
 		defer hostsfile.Close()
 
-		for hostScanner.Scan() {
-			address := hostScanner.Text()
-			sb := makeRequest(address)
-			vs, mod := extractViewstate(sb)
-			vstate := viewstate{
-				host:      address,
-				modifier:  mod,
-				viewstate: vs,
-			}
-			vsArray = append(vsArray, vstate)
+		vsArray = buildViewstateObject(vsArray, hostScanner)
 
-		}
 		fmt.Printf(Purple("Got: %d viewstate(s)\n"), len(vsArray))
-
-		for _, vs := range vsArray {
-			var validationKey string
-			for keyScanner.Scan() {
-				validationKey = strings.Split(keyScanner.Text(), " ")[0]
-				viewstate, _ := base64.StdEncoding.DecodeString(vs.viewstate)
-				modifier := vs.modifier
-				for _, element := range algorithms {
-					match := decode(validationKey, element, viewstate, modifier)
-					if match {
-						vs.validationKey = validationKey
-						fmt.Println(Green("KEY FOUND!!!"))
-						fmt.Printf("Host: ")
-						fmt.Printf(Yellow(" %s \n"), vs.host)
-						fmt.Printf("Validation Key: ")
-						fmt.Printf(Green("%s"), vs.validationKey)
-					}
-				}
-
-			}
-
-		}
-
+		bruteKeys(vsArray, keyScanner)
 		if err := hostScanner.Err(); err != nil {
 			log.Fatal(err)
 		}
