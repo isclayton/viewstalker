@@ -38,7 +38,7 @@ func getMachineKeys(keyfile os.File) (*bufio.Scanner, *os.File, error) {
 	return scannerMAC, machineKeys, err
 }
 
-func getHosts(hostsfile os.File) (*bufio.Scanner, *os.File, error) {
+func prepareHosts(hostsfile os.File) (*bufio.Scanner, *os.File, error) {
 	hosts, err := os.Open(hostsfile.Name())
 
 	scanner := bufio.NewScanner(hosts)
