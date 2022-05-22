@@ -1,4 +1,4 @@
-module ieksec.com/viewstalker
+module ieksec.io/viewstalker
 
 go 1.18
 
