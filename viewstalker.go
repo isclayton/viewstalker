@@ -11,6 +11,16 @@ import (
 
 func main() {
 
+	fmt.Print(`____   ____.__                       __         .__   __
+\   \ /   /|__| ______  _  _________/  |______  |  | |  | __ ___________ 
+ \   Y   / |  |/ __ \ \/ \/ /  ___/\   __\__  \ |  | |  |/ // __ \_  __ \
+  \     /  |  \  ___/\     /\___ \  |  |  / __ \|  |_|    <\  ___/|  | \/
+   \___/   |__|\___  >\/\_//____  > |__| (____  /____/__|_ \\___  >__|   
+                   \/           \/            \/          \/    \/       
+
+
+`)
+
 	parser := argparse.NewParser("viewStalker", "A tool for identifying vulnerable ASP.NET viewstates")
 	hosts := parser.File("l", "hosts", os.O_RDWR, 0600, &argparse.Options{Required: false, Help: "Path to file with list of hosts to check, one per line"})
 	keys := parser.File("M", "mac", os.O_RDWR, 0600, &argparse.Options{Required: false, Help: "machine keys file from blacklist3r"})
