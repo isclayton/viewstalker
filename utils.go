@@ -11,7 +11,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
-
+        "crypto/tls"
 	"crypto/sha512"
 	"encoding/base64"
 	"encoding/hex"
@@ -84,6 +84,7 @@ func makeRequest(address string) string {
 
 	fmt.Println(Teal("Trying "))
 	fmt.Printf(Teal("%s\n"), address)
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	resp, err := http.Get(address)
 	if err != nil {
 		log.Fatalln(err)
