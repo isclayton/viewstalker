@@ -6,27 +6,27 @@ import (
 	"crypto/hmac"
 	"crypto/sha1"
 	"crypto/sha256"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"os"
-	"strings"
-        "crypto/tls"
 	"crypto/sha512"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"fmt"
 	"hash"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"strings"
 
 	"golang.org/x/net/html"
 )
 
 var (
-	BadModifier      = errors.New("The provided modifier is bad")
-	algorithms       = []string{"SHA1", "HMACSHA256", "HMACSHA384", "HMACSHA512"}
-	hashSizes        = []int{20, 32, 48, 64}
-	InvalidViewstate = errors.New("Invalid Viewstate")
+	ErrBadModifier      = errors.New("the provided modifier is bad")
+	algorithms          = []string{"SHA1", "HMACSHA256", "HMACSHA384", "HMACSHA512"}
+	hashSizes           = []int{20, 32, 48, 64}
+	ErrInvalidViewstate = errors.New("invalid viewstate")
 )
 
 type viewstate struct {
@@ -89,7 +89,7 @@ func makeRequest(address string) string {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -170,12 +170,13 @@ func decode(validationKey string, validationAlgorithm string, protectedData []by
 	return match
 }
 
-func bruteKeys(vsArray []viewstate, keyScanner *bufio.Scanner) {
-
+func bruteKeys(vsArray []viewstate, keyScanner *bufio.Scanner) bool {
+	fmt.Println(Teal("Bruting machine key"))
 	for _, vs := range vsArray {
 		var validationKey string
 		for keyScanner.Scan() {
 			validationKey = strings.Split(keyScanner.Text(), " ")[0]
+
 			viewstate, _ := base64.StdEncoding.DecodeString(vs.viewstate)
 			modifier := vs.modifier
 			for _, element := range algorithms {
@@ -187,12 +188,13 @@ func bruteKeys(vsArray []viewstate, keyScanner *bufio.Scanner) {
 					fmt.Printf(Yellow(" %s \n"), vs.host)
 					fmt.Printf("Validation Key: ")
 					fmt.Printf(Green("%s"), vs.validationKey)
+					return true
 				}
 			}
 
 		}
-
 	}
+	return false
 }
 
 func buildViewstateObject(vsArray []viewstate, hostScanner *bufio.Scanner) []viewstate {
@@ -215,7 +217,7 @@ func decodeData(validationKey string, validationAlgorithm string, protectedData 
 
 	byteModifier, err := hex.DecodeString(modifier)
 	if err != nil {
-		fmt.Println(BadModifier)
+		fmt.Println(ErrBadModifier)
 	}
 	var dataSize int
 	var response bool
@@ -226,10 +228,10 @@ func decodeData(validationKey string, validationAlgorithm string, protectedData 
 
 	//fmt.Println(hashSize, len(byteHash), len(protectedData), protectedData)
 	if len(protectedData) < hashSize {
-		fmt.Printf(Yellow("Viewstate with no data detected\n"))
+		fmt.Println(Yellow("Viewstate with no data detected\n"))
 		dataSize = 0
 
-		return false, InvalidViewstate
+		return false, ErrInvalidViewstate
 	} else {
 		dataSize = len(protectedData) - hashSize
 
@@ -249,7 +251,7 @@ func decodeData(validationKey string, validationAlgorithm string, protectedData 
 	if err != nil {
 		log.Fatal(err)
 	}
-	if bytes.Compare(computedHash, byteHash) == 0 {
+	if bytes.Equal(computedHash, byteHash) {
 		response = true
 		copy(rawData, protectedData)
 	} else {

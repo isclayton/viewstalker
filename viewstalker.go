@@ -55,7 +55,9 @@ func main() {
 		}
 
 		vsArray = append(vsArray, vs)
-		bruteKeys(vsArray, keyScanner)
+		if !bruteKeys(vsArray, keyScanner) {
+			fmt.Println(Red("Key not found"))
+		}
 
 	} else if strings.Contains(addressValue, "http") {
 		var vsArray []viewstate
@@ -71,7 +73,9 @@ func main() {
 		defer keyfile.Close()
 
 		vsArray = append(vsArray, vs)
-		bruteKeys(vsArray, keyScanner)
+		if !bruteKeys(vsArray, keyScanner) {
+			fmt.Println(Red("Key not found"))
+		}
 
 	} else if !argparse.IsNilFile(&hostsFile) {
 
@@ -91,7 +95,9 @@ func main() {
 		vsArray = buildViewstateObject(vsArray, hostScanner)
 
 		fmt.Printf(Purple("Got: %d viewstate(s)\n"), len(vsArray))
-		bruteKeys(vsArray, keyScanner)
+		if !bruteKeys(vsArray, keyScanner) {
+			fmt.Println(Red("Key not found"))
+		}
 		if err := hostScanner.Err(); err != nil {
 			log.Fatal(err)
 		}
