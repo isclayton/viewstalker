@@ -84,7 +84,7 @@ func makeRequest(address string) string {
 
 	fmt.Println(Teal("Trying "))
 	fmt.Printf(Teal("%s\n"), address)
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: *noVerifyTls}
 	resp, err := http.Get(address)
 	if err != nil {
 		log.Fatalln(err)
@@ -171,7 +171,6 @@ func decode(validationKey string, validationAlgorithm string, protectedData []by
 }
 
 func bruteKeys(vsArray []viewstate, keyScanner *bufio.Scanner) bool {
-	fmt.Println(Teal("Bruting machine key"))
 	for _, vs := range vsArray {
 		var validationKey string
 		for keyScanner.Scan() {
