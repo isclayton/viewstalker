@@ -9,6 +9,8 @@ import (
 	"github.com/akamensky/argparse"
 )
 
+var noVerifyTls *bool
+
 func main() {
 
 	fmt.Print(`____   ____.__                       __         .__   __
@@ -22,27 +24,27 @@ func main() {
 `)
 
 	parser := argparse.NewParser("viewStalker", "A tool for identifying vulnerable ASP.NET viewstates")
+	parser.ExitOnHelp(true)
+	noVerifyTls = parser.Flag("k", "no-check-cert", &argparse.Options{Default: true})
 	hosts := parser.File("l", "hosts", os.O_RDWR, 0600, &argparse.Options{Required: false, Help: "Path to file with list of hosts to check, one per line"})
-	keys := parser.File("M", "mac", os.O_RDWR, 0600, &argparse.Options{Required: false, Help: "machine keys file from blacklist3r"})
-	address := parser.String("a", "address", &argparse.Options{Required: false, Help: "Single host to check"})
-	testViewstate := parser.String("v", "viewstate", &argparse.Options{Required: false, Help: "b64 encoded viewstate"})
-	testModifier := parser.String("m", "modifier", &argparse.Options{Required: false, Help: "modifer"})
+	keys := parser.File("M", "mac", os.O_RDWR, 0600, &argparse.Options{Required: true, Help: "machine keys file from blacklist3r"})
+	targetAddress := parser.String("a", "address", &argparse.Options{Required: false, Help: "Single host to check"})
+	targetViewstate := parser.String("v", "viewstate", &argparse.Options{Required: false, Help: "b64 encoded viewstate"})
+	targetModifier := parser.String("m", "modifier", &argparse.Options{Required: false, Help: "modifer"})
 	err := parser.Parse(os.Args)
 	if err != nil {
 		fmt.Print(parser.Usage(err))
-		log.Fatal(err)
+		os.Exit(0)
 	}
 
 	keyFile := *keys
-	addressValue := *address
+	addressValue := *targetAddress
 	hostsFile := *hosts
-	if len(*testViewstate) != 0 {
+	if len(*targetViewstate) != 0 {
 		var vsArray []viewstate
-		modifier := *testModifier
+		modifier := *targetModifier
 
-		if len(*testViewstate) == 0 || len(modifier) == 0 {
-			fmt.Print(parser.Usage(err))
-			fmt.Println(Red("Required: viewstate, modifier"))
+		if len(*targetViewstate) == 0 || len(modifier) == 0 {
 			os.Exit(0)
 		}
 		keyScanner, keyfile, _ := getMachineKeys(keyFile)
@@ -50,7 +52,7 @@ func main() {
 
 		vs := viewstate{
 			host:      addressValue,
-			viewstate: *testViewstate,
+			viewstate: *targetViewstate,
 			modifier:  modifier,
 		}
 
