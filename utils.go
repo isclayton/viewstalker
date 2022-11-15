@@ -87,12 +87,12 @@ func makeRequest(address string) string {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: *noVerifyTls}
 	resp, err := http.Get(address)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(Red(err))
 		return "0"
 	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(Red(err))
 		return "0"
 	}
 	sb := string(body)
@@ -108,7 +108,7 @@ func makeRequest(address string) string {
 func extractViewstate(body string) (string, string) {
 	doc, err := html.Parse(strings.NewReader(body))
 	if err != nil {
-		log.Fatal(err)
+		log.Println(Red(err))
 	}
 	var f func(*html.Node)
 	var modifer string
@@ -165,7 +165,7 @@ func decode(validationKey string, validationAlgorithm string, protectedData []by
 		//fmt.Println(protectedData)
 		match, err = decodeData(validationKey, validationAlgorithm, protectedData, modifier)
 		if err != nil {
-			log.Fatal(err)
+			log.Print(Red(err))
 		}
 	}
 
