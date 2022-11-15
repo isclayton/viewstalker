@@ -31,6 +31,7 @@ func main() {
 	targetAddress := parser.String("a", "address", &argparse.Options{Required: false, Help: "Single host to check"})
 	targetViewstate := parser.String("v", "viewstate", &argparse.Options{Required: false, Help: "b64 encoded viewstate"})
 	targetModifier := parser.String("m", "modifier", &argparse.Options{Required: false, Help: "modifer"})
+	//ysoPath := parser.String("y", "ysoserial", &argparse.Options{Required: false, Help: "Path to ysoserial.net "})
 	err := parser.Parse(os.Args)
 	if err != nil {
 		fmt.Print(parser.Usage(err))

@@ -88,10 +88,12 @@ func makeRequest(address string) string {
 	resp, err := http.Get(address)
 	if err != nil {
 		log.Fatalln(err)
+		return "0"
 	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatalln(err)
+		return "0"
 	}
 	sb := string(body)
 
