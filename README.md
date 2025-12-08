@@ -48,7 +48,7 @@ Examples:
   ./viewstalker -l hosts.txt -M keys.txt -o results.json
 
   # Piped input
-  http -l hosts.txt -mc 200 | ./viewstalker -M merged_machine_keys.txt -o results.json
+  http -silent -l hosts.txt -mc 200 | ./viewstalker -M merged_machine_keys.txt -o results.json
 
 ```
 
