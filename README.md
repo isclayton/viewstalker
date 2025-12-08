@@ -12,6 +12,7 @@ Despite the relative ease of exploitation, to my knowledge no utility exists to 
 usage: viewstalker [-h|--help] [-l|--hosts <file>] [-M|--mac <file>]
                    [-a|--address "<value>"] [-v|--viewstate "<value>"] 
                    [-m|--modifier "<value>"] [-k|--no-check-cert]
+                   [-d|--debug] [--stdin]
                    
 
                    A tool for identifying vulnerable ASP.NET viewstates
@@ -25,7 +26,29 @@ Arguments:
   -v  --viewstate      b64 encoded __VIEWSTATE
   -m  --modifier       modifer
   -k  --no-check-cert  Disable TLS verification for use with mitm proxy etc
+  -d  --debug          Enable debug logging
+  -o  --output         Output file for positive results (JSON format)
+      --stdin          Read hosts from stdin (piped input)
 
+Examples:
+
+  # Single host
+  ./viewstalker -a example.com -M keys.txt
+  
+  # Multiple hosts from file
+  ./viewstalker -l hosts.txt -M keys.txt
+  
+  # Piped input
+  cat hosts.txt | ./viewstalker -M keys.txt
+  
+  # With debug logging
+  ./viewstalker -d -l hosts.txt -M keys.txt
+  
+  # Save results to file
+  ./viewstalker -l hosts.txt -M keys.txt -o results.json
+
+  # Piped input
+  http -l hosts.txt -mc 200 | ./viewstalker -M merged_machine_keys.txt -o results.json
 
 ```
 
@@ -37,6 +60,8 @@ Arguments:
 - [x] initial target handling and parsing
 - [x] recreate blacklist3r functionality for bruting keys
 - [x] Multi-host scanning
+- [x] Concurrent processing and performance optimization
+- [x] Debug logging and output formatting
 - [ ] automatic payload generation and exploitation
 - [ ] Support for JSF view states
 
